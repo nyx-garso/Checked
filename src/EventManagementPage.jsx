@@ -25,6 +25,7 @@ const EventManagementPage = ({ user, goBack }) => {
     };
     fetchEvents();
   }, [user]);
+
   if (showCreateEvent) return <CreateEventPage user={user} goBackToManagement={() => setShowCreateEvent(false)} />;
   if (showCreateEvent) return <CreateEventPage user={user} goBack={() => setShowCreateEvent(false)} />;
   const viewAttendance = (eventId) => {
@@ -39,6 +40,7 @@ const EventManagementPage = ({ user, goBack }) => {
       setAttendanceList(attendees);
     });
   };
+
   const handleDeleteEvent = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
@@ -50,7 +52,6 @@ const EventManagementPage = ({ user, goBack }) => {
       }
     }
   };
-  
 
   return (
     <div className="app-container">
@@ -58,40 +59,43 @@ const EventManagementPage = ({ user, goBack }) => {
         <h1 className="page-title">Event Management</h1>
 
         <div className="button-group">
-            <button className="button" onClick={() => setShowCreateEvent(true)}>Create Event</button>
-            <button className="button" onClick={goBack}>Back to Attendance</button>
+          <button className="button" onClick={() => setShowCreateEvent(true)}>Create Event</button>
+          <button className="button" onClick={goBack}>Back to Attendance</button>
         </div>
 
-        <div className="event-list">
-          {events.map(event => (
-            <div key={event.id} className="event-item">
-              <h3>{event.eventName}</h3>
-              <p>Date: {event.eventDate}</p>
-              <p>Time: {event.eventTime}</p>
-              <p>Event ID: {event.id}</p>
-              <button className="view-attendance-button" onClick={() => viewAttendance(event.id)}>View Attendance</button>
-              <button className="delete-event-button" onClick={() => handleDeleteEvent(event.id)}>Delete Event</button>
-            </div>
-          ))}
-        </div>
+        {events.length === 0 ? (
+          <p className="message" style={{ textAlign: 'center', color: '#d32f2f', fontWeight: 'bold' }}>Currently have no events.</p>
+        ) : (
+          <div className="event-list">
+            {events.map(event => (
+              <div key={event.id} className="event-item">
+                <h3>{event.eventName}</h3>
+                <p>Date: {event.eventDate}</p>
+                <p>Time: {event.eventTime}</p>
+                <p>Event ID: {event.id}</p>
+                <button className="view-attendance-button" onClick={() => viewAttendance(event.id)}>View Attendance</button>
+                <button className="delete-event-button" onClick={() => handleDeleteEvent(event.id)}>Delete Event</button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {selectedEventId && (
-        <div className="attendance-list">
+          <div className="attendance-list">
             <h2>Attendance for Event: {events.find(event => event.id === selectedEventId)?.eventName || 'Unknown Event'}</h2>
             {attendanceList.length === 0 ? (
-            <p>No attendance marked yet.</p>
+              <p>No attendance marked yet.</p>
             ) : (
-            <ul>
+              <ul>
                 {attendanceList.map(attendee => (
-                <li key={attendee.id}>
+                  <li key={attendee.id}>
                     {attendee.lastName}, {attendee.firstName} - Marked at {attendee.timestamp}
-                </li>
+                  </li>
                 ))}
-            </ul>
+              </ul>
             )}
-        </div>
+          </div>
         )}
-        
       </div>
     </div>
   );
