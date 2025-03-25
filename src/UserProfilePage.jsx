@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { db, auth } from './firebaseConfig';
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
+import { doc, getDoc, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { signOut, deleteUser } from 'firebase/auth';
 import './App.css';
 
 const UserProfilePage = ({ user, goBack }) => {
   const [userInfo, setUserInfo] = useState(null);
   const [attendedEvents, setAttendedEvents] = useState([]);
-  const [message] = useState('');
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -45,6 +45,19 @@ const UserProfilePage = ({ user, goBack }) => {
     window.location.reload();
   };
 
+  const handleDeleteAccount = async () => {
+    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      try {
+        await deleteDoc(doc(db, 'users', user.uid)); // Remove user data from Firestore
+        await deleteUser(auth.currentUser); // Delete user from Firebase Authentication
+        alert('Account deleted successfully.');
+        window.location.reload();
+      } catch (error) {
+        alert('Error deleting account: ' + error.message);
+      }
+    }
+  };
+
   if (!userInfo) return <p>Loading user information...</p>;
 
   return (
@@ -52,34 +65,19 @@ const UserProfilePage = ({ user, goBack }) => {
       <div className="form-container">
         <h1 className="page-title">User Profile</h1>
         
-        <div style={{ textAlign: 'left', marginBottom: '10px' }}>
-            <label style={{ fontSize: '15px', fontWeight: 'bold', color: '#1B5E20' }}>First Name</label>
-            <input 
-            type="text" 
-            value={userInfo.firstName} 
-            disabled 
-            className="input" 
-            /><br />
+        <div className="profile-field">
+            <label>First Name</label>
+            <input type="text" value={userInfo.firstName} disabled className="input" />
         </div>
         
-        <div style={{ textAlign: 'left', marginBottom: '10px' }}>
-            <label style={{ fontSize: '15px', fontWeight: 'bold', color: '#1B5E20' }}>Last Name</label>
-            <input 
-            type="text" 
-            value={userInfo.lastName} 
-            disabled 
-            className="input" 
-            /><br />
+        <div className="profile-field">
+            <label>Last Name</label>
+            <input type="text" value={userInfo.lastName} disabled className="input" />
         </div>
 
-        <div style={{ textAlign: 'left', marginBottom: '10px' }}>
-            <label style={{ fontSize: '15px', fontWeight: 'bold', color: '#1B5E20' }}>User Tag</label>
-            <input 
-            type="text" 
-            value={userInfo.userTag} 
-            disabled 
-            className="input" 
-            /><br />
+        <div className="profile-field">
+            <label>User Tag</label>
+            <input type="text" value={userInfo.userTag} disabled className="input" />
         </div>
 
         <h2>Attended Events</h2>
@@ -93,13 +91,14 @@ const UserProfilePage = ({ user, goBack }) => {
               ))}
             </ul>
           ) : (
-            <p style={{ fontSize: '15px', fontWeight: 'bold', color: '#5cf366'}}>No attended events found.</p>
+            <p>No attended events found.</p>
           )}
         </div>
         
         <div className="button-group">
           <button className="button" onClick={goBack}>Back to Attendance</button>
           <button className="logout-button" onClick={handleLogout}>Logout</button>
+          <button className="delete-account-button" onClick={handleDeleteAccount}>Delete Account</button>
         </div>
         
         {message && <p className="message">{message}</p>}
